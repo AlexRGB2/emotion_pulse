@@ -26,47 +26,42 @@ class _MaterialColorPickerExampleState
     extends State<MaterialColorPickerExample> {
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 20),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      titlePadding: const EdgeInsets.all(0),
-                      contentPadding: const EdgeInsets.all(0),
-                      content: SingleChildScrollView(
-                        child: MaterialPicker(
-                          pickerColor: widget.pickerColor,
-                          onColorChanged: widget.onColorChanged,
-                        ),
-                      ),
-                    );
-                  },
+        ElevatedButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  titlePadding: const EdgeInsets.all(0),
+                  contentPadding: const EdgeInsets.all(0),
+                  content: SingleChildScrollView(
+                    child: MaterialPicker(
+                      pickerColor: widget.pickerColor,
+                      onColorChanged: widget.onColorChanged,
+                    ),
+                  ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.pickerColor,
-                shadowColor: widget.pickerColor.withOpacity(1),
-                elevation: 10,
-              ),
-              child: Text(
-                'Cambiar Color Led',
-                style: TextStyle(
-                    color: useWhiteForeground(widget.pickerColor)
-                        ? Colors.white
-                        : Colors.black),
-              ),
-            ),
-            const SizedBox(width: 20),
-          ],
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.pickerColor,
+            shadowColor: widget.pickerColor.withOpacity(1),
+            elevation: 10,
+          ),
+          child: Text(
+            'Cambiar Color Led',
+            style: TextStyle(
+                color: useWhiteForeground(widget.pickerColor)
+                    ? Colors.white
+                    : Colors.black),
+          ),
         ),
+        const SizedBox(height: 20),
       ],
     );
   }

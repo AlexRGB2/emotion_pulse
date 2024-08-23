@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'package:emotion_pulse/pages/heartbeatsensor.dart';
-import 'package:emotion_pulse/pages/led.dart';
 import 'package:emotion_pulse/pages/linechart.dart';
 import 'package:emotion_pulse/pages/map.dart';
 import 'package:emotion_pulse/pages/podometer.dart';
+import 'package:emotion_pulse/pages/actionButtons.dart';
 import 'package:emotion_pulse/pages/temperature.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -112,7 +112,7 @@ class MainApp extends StatelessWidget {
                   padding: const EdgeInsets.all(20.0),
                   child: HeartbeatSensor(
                     client: client,
-                    topic: 'emotionpulse/heartRate',
+                    topic: 'emotionpulse/heartbeat',
                   )),
             ),
             // Historico de latidos
@@ -121,7 +121,6 @@ class MainApp extends StatelessWidget {
                   padding: EdgeInsets.all(20.0),
                   child: CustomLineChart(
                     sensorId: 3,
-                    minMaxY: [50, 180],
                     intervalo: 10,
                     gradiente: LinearGradient(
                       colors: [
@@ -151,7 +150,6 @@ class MainApp extends StatelessWidget {
                   padding: EdgeInsets.all(20.0),
                   child: CustomLineChart(
                       sensorId: 2,
-                      minMaxY: [33, 42],
                       intervalo: 1,
                       gradiente: LinearGradient(
                         colors: [Color(0xff9796f0), Color(0xfffbc7d4)],
@@ -171,7 +169,6 @@ class MainApp extends StatelessWidget {
                   padding: EdgeInsets.all(20.0),
                   child: CustomLineChart(
                       sensorId: 1,
-                      minMaxY: [0, 9000],
                       intervalo: 1000,
                       gradiente: LinearGradient(
                         colors: [
@@ -191,13 +188,17 @@ class MainApp extends StatelessWidget {
                 child: MyMap(latitude: 21.1671346, longitude: -100.9317302),
               ),
             ),
-            // Cambiar color de led
+            // Botones
             Center(
-              child: CustomColorPicker(
-                topic: 'emotionpulse/led',
-                client: client,
-              ),
-            ),
+                child: ActionButtons(
+              topic: [
+                'emotionpulse/record',
+                'emotionpulse/play',
+                'emotionpulse/resetPedometer',
+                'emotionpulse/led',
+              ],
+              client: client,
+            ))
           ],
         ),
       ),

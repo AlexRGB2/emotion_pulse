@@ -6,11 +6,9 @@ class CustomLineChart extends StatefulWidget {
   const CustomLineChart(
       {super.key,
       required this.sensorId,
-      required this.minMaxY,
       required this.intervalo,
       required this.gradiente});
   final int sensorId;
-  final List<double> minMaxY;
   final double intervalo;
   final LinearGradient gradiente;
 
@@ -22,11 +20,12 @@ class _CustomLineChartState extends State<CustomLineChart> {
   final List<FlSpot> _spots = [];
   final supabase = Supabase.instance.client;
   bool _isDisposed = false;
+  var contador = 1;
 
   @override
   void initState() {
-    super.initState();
     getSpots();
+    super.initState();
   }
 
   void getSpots() async {
@@ -36,7 +35,6 @@ class _CustomLineChartState extends State<CustomLineChart> {
         .eq('sensor_id', widget.sensorId)
         .gte('timestamp', '2024-08-22 02:06:42.589879+00');
 
-    var contador = 1;
     List<FlSpot> spots = [];
 
     for (var item in data) {
@@ -55,11 +53,17 @@ class _CustomLineChartState extends State<CustomLineChart> {
 
   @override
   Widget build(BuildContext context) {
+    double minY = 0;
+    double maxY = 0;
+    if (_spots.isNotEmpty) {
+      minY = _spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
+      maxY = _spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+    }
     return LineChart(
       LineChartData(
         backgroundColor: const Color.fromARGB(255, 211, 211, 211),
-        minY: widget.minMaxY[0],
-        maxY: widget.minMaxY[1],
+        minY: minY,
+        maxY: maxY,
         lineBarsData: [
           LineChartBarData(
               spots: _spots,
