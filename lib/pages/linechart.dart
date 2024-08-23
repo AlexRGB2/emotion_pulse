@@ -1,11 +1,18 @@
-import 'package:emotion_pulse/services/mqtt_client.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CustomLineChart extends StatefulWidget {
-  const CustomLineChart({super.key, required this.topic});
-  final String topic;
+  const CustomLineChart(
+      {super.key,
+      required this.sensorId,
+      required this.minMaxY,
+      required this.intervalo,
+      required this.gradiente});
+  final int sensorId;
+  final List<double> minMaxY;
+  final double intervalo;
+  final LinearGradient gradiente;
 
   @override
   State<CustomLineChart> createState() => _CustomLineChartState();
@@ -13,56 +20,65 @@ class CustomLineChart extends StatefulWidget {
 
 class _CustomLineChartState extends State<CustomLineChart> {
   final List<FlSpot> _spots = [];
-  late MqttService mqttService;
   final supabase = Supabase.instance.client;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
-    mqttService = MqttService(_onMessageReceived, widget.topic);
-    mqttService.connect();
+    getSpots();
   }
 
-  Future<void> _onMessageReceived(String message) async {
-    final double newValue = double.parse(message);
-    setState(() {
-      _spots.add(FlSpot(_spots.length + 1.0, newValue));
-    });
-
-    await supabase
+  void getSpots() async {
+    final data = await supabase
         .from('datossensores')
-        .insert({'sensor_id': 3, 'valor': message}).onError(
-      (error, stackTrace) {
-        print('Error inserting data: $error');
-      },
-    );
+        .select('''valor, timestamp''')
+        .eq('sensor_id', widget.sensorId)
+        .gte('timestamp', '2024-08-22 02:06:42.589879+00');
+
+    var contador = 1;
+    List<FlSpot> spots = [];
+
+    for (var item in data) {
+      final val = FlSpot(
+          double.parse(contador.toString()), double.parse(item['valor']));
+      spots.add(val);
+      contador++;
+    }
+
+    if (mounted && !_isDisposed) {
+      setState(() {
+        _spots.addAll(spots);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return LineChart(
       LineChartData(
-        minX: 1,
-        minY: 50,
-        maxY: 200,
+        backgroundColor: const Color.fromARGB(255, 211, 211, 211),
+        minY: widget.minMaxY[0],
+        maxY: widget.minMaxY[1],
         lineBarsData: [
           LineChartBarData(
-            spots: _spots,
-            isCurved: true,
-            preventCurveOverShooting: true,
-            isStrokeCapRound: true,
-            color: Colors.redAccent,
-          ),
+              spots: _spots,
+              barWidth: 10.0,
+              isCurved: true,
+              preventCurveOverShooting: true,
+              isStrokeCapRound: true,
+              gradient: widget.gradiente),
         ],
-        titlesData: const FlTitlesData(
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        titlesData: FlTitlesData(
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
-            sideTitles:
-                SideTitles(showTitles: true, interval: 10, reservedSize: 45),
-            axisNameWidget: Text('BPM'),
+            sideTitles: SideTitles(
+                showTitles: true, interval: widget.intervalo, reservedSize: 45),
           ),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
@@ -73,7 +89,7 @@ class _CustomLineChartState extends State<CustomLineChart> {
 
   @override
   void dispose() {
-    mqttService.disconnect();
+    _isDisposed = true;
     super.dispose();
   }
 }

@@ -1,16 +1,21 @@
-import 'package:emotion_pulse/services/mqtt_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MaterialColorPickerExample extends StatefulWidget {
   const MaterialColorPickerExample({
     super.key,
     required this.pickerColor,
     required this.onColorChanged,
+    required this.client,
+    required this.topic,
   });
 
   final Color pickerColor;
   final ValueChanged<Color> onColorChanged;
+  final MqttServerClient client;
+  final String topic;
 
   @override
   State<MaterialColorPickerExample> createState() =>
@@ -44,7 +49,7 @@ class _MaterialColorPickerExampleState
                       ),
                     );
                   },
-                ).then((color) => {});
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.pickerColor,
@@ -68,8 +73,11 @@ class _MaterialColorPickerExampleState
 }
 
 class CustomColorPicker extends StatefulWidget {
-  const CustomColorPicker({super.key, required this.topic});
+  const CustomColorPicker(
+      {super.key, required this.topic, required this.client});
+
   final String topic;
+  final MqttServerClient client;
 
   @override
   State<StatefulWidget> createState() => _CustomColorPicker();
@@ -77,21 +85,25 @@ class CustomColorPicker extends StatefulWidget {
 
 class _CustomColorPicker extends State<CustomColorPicker> {
   Color currentColor = Colors.amber;
-  late MqttService mqttService;
 
   @override
   void initState() {
     super.initState();
-    mqttService = MqttService(_onMessageReceived, widget.topic);
-    mqttService.connect();
   }
 
-  void _onMessageReceived(String message) {}
-
   void changeColor(Color color) {
+    final builder = MqttClientPayloadBuilder();
+    builder.addString(color.toHexString().substring(2));
+
     setState(() => currentColor = color);
-    mqttService.publishMessageWithRetry(
-        widget.topic, color.toHexString().substring(2));
+
+    if (widget.client.connectionStatus?.state ==
+        MqttConnectionState.connected) {
+      widget.client
+          .publishMessage(widget.topic, MqttQos.atMostOnce, builder.payload!);
+    } else {
+      print('No hay conexión con el broker');
+    }
   }
 
   @override
@@ -99,16 +111,13 @@ class _CustomColorPicker extends State<CustomColorPicker> {
     return MaterialColorPickerExample(
       pickerColor: currentColor,
       onColorChanged: changeColor,
+      client: widget.client,
+      topic: widget.topic,
     );
-  }
-
-  _reconnect() {
-    mqttService.connect();
   }
 
   @override
   void dispose() {
-    mqttService.disconnect();
     super.dispose();
   }
 }

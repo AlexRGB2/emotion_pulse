@@ -1,23 +1,23 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
-class TemperatureChart extends StatefulWidget {
-  const TemperatureChart(
-      {super.key, required this.topic, required this.client});
+class PedometerChart extends StatefulWidget {
+  const PedometerChart({super.key, required this.topic, required this.client});
 
   final String topic;
   final MqttServerClient client;
 
   @override
-  State<TemperatureChart> createState() => _TemperatureChartState();
+  State<PedometerChart> createState() => _PedometerChartState();
 }
 
-class _TemperatureChartState extends State<TemperatureChart> {
-  String temperature = '35.0';
+class _PedometerChartState extends State<PedometerChart> {
+  int steps = 0;
   final supabase = Supabase.instance.client;
   late StreamSubscription<List<MqttReceivedMessage<MqttMessage>>> _subscription;
   bool _isDisposed = false;
@@ -25,10 +25,10 @@ class _TemperatureChartState extends State<TemperatureChart> {
   @override
   void initState() {
     super.initState();
-    suscribeToTopic(widget.topic);
+    subscribeToTopic(widget.topic);
   }
 
-  void suscribeToTopic(String topic) {
+  void subscribeToTopic(String topic) {
     widget.client.subscribe(topic, MqttQos.atMostOnce);
 
     _subscription = widget.client.updates!
@@ -45,18 +45,17 @@ class _TemperatureChartState extends State<TemperatureChart> {
   }
 
   Future<void> _onMessageReceived(String message) async {
-    final double newValue = double.parse(message);
+    final int newSteps = int.parse(message);
 
-    // Verificar si el widget aún está montado antes de llamar a setState
     if (mounted && !_isDisposed) {
       setState(() {
-        temperature = newValue.toString();
+        steps = newSteps;
       });
     }
 
     await supabase
         .from('datossensores')
-        .insert({'sensor_id': 2, 'valor': temperature}).onError(
+        .insert({'sensor_id': 1, 'valor': steps.toString()}).onError(
       (error, stackTrace) {
         print('Error inserting data: $error');
       },
@@ -67,24 +66,23 @@ class _TemperatureChartState extends State<TemperatureChart> {
   Widget build(BuildContext context) {
     return SfRadialGauge(
         enableLoadingAnimation: true,
-        animationDuration: 4500,
+        animationDuration: 3000,
         title: const GaugeTitle(
-            text: 'Temperatura',
+            text: 'Podómetro',
             textStyle: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
         axes: <RadialAxis>[
-          RadialAxis(minimum: 34, maximum: 41, ranges: <GaugeRange>[
-            GaugeRange(startValue: 34, endValue: 35, color: Colors.blue),
-            GaugeRange(startValue: 35, endValue: 37.5, color: Colors.green),
-            GaugeRange(startValue: 37.5, endValue: 39.5, color: Colors.yellow),
-            GaugeRange(startValue: 39.5, endValue: 41, color: Colors.red),
+          RadialAxis(minimum: 0, maximum: 10000, ranges: <GaugeRange>[
+            GaugeRange(startValue: 0, endValue: 3000, color: Colors.red),
+            GaugeRange(startValue: 3000, endValue: 7000, color: Colors.orange),
+            GaugeRange(startValue: 7000, endValue: 10000, color: Colors.green),
           ], pointers: <GaugePointer>[
             NeedlePointer(
-              value: double.parse(temperature),
+              value: steps.toDouble(),
               enableAnimation: true,
             )
           ], annotations: <GaugeAnnotation>[
             GaugeAnnotation(
-                widget: Text('$temperature °',
+                widget: Text('$steps pasos',
                     style: const TextStyle(
                         fontSize: 25, fontWeight: FontWeight.bold)),
                 angle: 90,
@@ -95,9 +93,8 @@ class _TemperatureChartState extends State<TemperatureChart> {
 
   @override
   void dispose() {
-    _isDisposed = true; // Indicar que el widget se ha desmontado
-    _subscription
-        .cancel(); // Cancelar la suscripción para evitar fugas de memoria
+    _isDisposed = true;
+    _subscription.cancel();
     super.dispose();
   }
 }

@@ -38,8 +38,8 @@ class _MyMapState extends State<MyMap> {
           markers: [
             Marker(
               point: LatLng(widget.latitude, widget.longitude),
-              width: 20,
-              height: 20,
+              width: 40,
+              height: 40,
               child: Image.asset('assets/images/map_marker.png'),
             ),
           ],
