@@ -7,6 +7,7 @@ import 'package:emotion_pulse/pages/map.dart';
 import 'package:emotion_pulse/pages/podometer.dart';
 import 'package:emotion_pulse/pages/actionButtons.dart';
 import 'package:emotion_pulse/pages/temperature.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -109,46 +110,82 @@ class MainApp extends StatelessWidget {
             // Latidos del corazón
             Center(
               child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: HeartbeatSensor(
-                    client: client,
-                    topic: 'emotionpulse/heartbeat',
-                  )),
+                padding: const EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: HeartbeatSensor(
+                      client: client,
+                      topic: 'emotionpulse/heartbeat',
+                    ),
+                  ),
+                ),
+              ),
             ),
             // Historico de latidos
-            const Center(
+            Center(
               child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: CustomLineChart(
-                    sensorId: 3,
-                    intervalo: 10,
-                    gradiente: LinearGradient(
-                      colors: [
-                        Color(0xfffc466b),
-                        Color(0xffffa8a8),
-                        Color(0xffff9e9e)
-                      ],
-                      stops: [0.25, 0.75, 0.87],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                padding: EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CustomLineChart(
+                      sensorId: 3,
+                      intervalo: 10,
+                      gradiente: LinearGradient(
+                        colors: [
+                          Color(0xfffc466b),
+                          Color(0xffffa8a8),
+                          Color(0xffff9e9e)
+                        ],
+                        stops: [0.25, 0.75, 0.87],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                     ),
-                  )),
+                  ),
+                ),
+              ),
             ),
-            // Gauge de Temperatura
+// Gauge de Temperatura
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: TemperatureChart(
-                  topic: 'emotionpulse/temperature',
-                  client: client,
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TemperatureChart(
+                      topic: 'emotionpulse/temperature',
+                      client: client,
+                    ),
+                  ),
                 ),
               ),
             ),
             // Historico de Temperatura
-            const Center(
+            Center(
               child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: CustomLineChart(
+                padding: EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CustomLineChart(
                       sensorId: 2,
                       intervalo: 1,
                       gradiente: LinearGradient(
@@ -156,18 +193,43 @@ class MainApp extends StatelessWidget {
                         stops: [0, 1],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                      ))),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
             // Podometro
             Center(
-              child: PedometerChart(
-                  topic: 'emotionpulse/pedometer', client: client),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: PedometerChart(
+                      topic: 'emotionpulse/pedometer',
+                      client: client,
+                    ),
+                  ),
+                ),
+              ),
             ),
             // Historico de Pasos
-            const Center(
+            Center(
               child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: CustomLineChart(
+                padding: EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CustomLineChart(
                       sensorId: 1,
                       intervalo: 1000,
                       gradiente: LinearGradient(
@@ -179,26 +241,55 @@ class MainApp extends StatelessWidget {
                         stops: [0, 0.5, 1],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                      ))),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
             // Mapa
-            const Center(
+            Center(
               child: Padding(
                 padding: EdgeInsets.all(20.0),
-                child: MyMap(latitude: 21.1671346, longitude: -100.9317302),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: MyMap(
+                      latitude: 21.1675710,
+                      longitude: -100.9294100,
+                    ),
+                  ),
+                ),
               ),
             ),
             // Botones
             Center(
-                child: ActionButtons(
-              topic: [
-                'emotionpulse/record',
-                'emotionpulse/play',
-                'emotionpulse/resetPedometer',
-                'emotionpulse/led',
-              ],
-              client: client,
-            ))
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ActionButtons(
+                      topic: [
+                        'emotionpulse/record',
+                        'emotionpulse/play',
+                        'emotionpulse/resetPedometer',
+                        'emotionpulse/led',
+                      ],
+                      client: client,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
